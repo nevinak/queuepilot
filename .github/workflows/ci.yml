@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      # Backend
+      - name: Install backend deps
+        working-directory: backend
+        run: npm ci
+
+      - name: Backend lint (if eslint config exists)
+        working-directory: backend
+        run: |
+          if [ -f eslint.config.js ]; then
+            npx eslint .
+          else
+            echo "No backend eslint.config.js found; skipping lint."
+          fi
+
+      - name: Backend tests
+        working-directory: backend
+        run: npm test
+
+      - name: Backend production build smoke (server file exists)
+        working-directory: backend
+        run: node -c server.js
+
+      # Frontend
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Frontend tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Frontend production build
+        working-directory: frontend
+        run: npm run build
+
+      # Artifact
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          if-no-files-found: error
+
