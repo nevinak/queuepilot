@@ -635,6 +635,29 @@ function PatientPortal({ appState, setAppState, selectedDoctor, setSelectedDepar
     return `${countdown} mins`;
   }, [myActiveEntry, liveEntry, countdown]);
 
+  const expectedTurnWindowStr = useMemo(() => {
+    const entryToTrack = myActiveEntry || liveEntry;
+    if (!entryToTrack) return 'Calculating...';
+    if (!entryToTrack.expectedTurnStart || !entryToTrack.expectedTurnEnd) return 'Calculating...';
+    const start = new Date(entryToTrack.expectedTurnStart);
+    const end = new Date(entryToTrack.expectedTurnEnd);
+    const formatTime = (date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `${formatTime(start)} – ${formatTime(end)}`;
+  }, [myActiveEntry, liveEntry]);
+
+  const recommendedDepartureStr = useMemo(() => {
+    const entryToTrack = myActiveEntry || liveEntry;
+    if (!entryToTrack) return '--';
+    if (!entryToTrack.recommendedDepartureTime) {
+      if (entryToTrack.status === 'SMART_HOLD' || entryToTrack.status === 'SMART HOLD') {
+        return 'Smart Hold';
+      }
+      return 'Calculating...';
+    }
+    const depTime = new Date(entryToTrack.recommendedDepartureTime);
+    return depTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }, [myActiveEntry, liveEntry]);
+
   useEffect(() => {
     const entryToTrack = myActiveEntry || liveEntry;
     if (!entryToTrack) return;

@@ -47,7 +47,9 @@ app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use(sanitize);
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
+if (env.NODE_ENV === 'production') {
+  app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
+}
 
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'QueuePilot API healthy', environment: env.NODE_ENV }));
 app.get('/api/config', authenticate, (req, res) => res.json({ success: true, message: 'Configuration loaded', data: app.locals.config }));
