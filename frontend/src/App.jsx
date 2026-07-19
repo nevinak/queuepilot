@@ -13,8 +13,8 @@ import { UnauthorizedPage, ForbiddenPage, NotFoundPage, ServerErrorPage } from '
 
 const HospitalMap = lazy(() => import('./components/HospitalMap'));
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
+const API = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : `${window.location.origin}/api`);
+const socket = io(import.meta.env.VITE_SOCKET_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin));
 
 const formatStatus = (status) => {
   const map = {
